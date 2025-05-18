@@ -6,7 +6,7 @@ import {Command, Option, Usage, UsageError}                                     
 import semver                                                                                 from 'semver';
 
 export type Tags = {
-  latest: Record<string, string>;
+  latest: Record<string, string | null>;
   tags: Array<string>;
 };
 

@@ -7,6 +7,10 @@ import {Command, Option, Usage, UsageError}                                     
 import semver                                                                                                                                                                                                             from 'semver';
 import * as t                                                                                                                                                                                                             from 'typanion';
 
+export function isVersionUpdate(candidate: string | null | undefined, current: string) {
+  return !!candidate && !!semver.valid(candidate) && semver.gt(candidate, current);
+}
+
 const LOCKFILE_MIGRATION_RULES: Array<{
   selector: (version: number) => boolean;
   name: keyof ConfigurationValueMap;
@@ -256,7 +260,7 @@ export default class YarnCommand extends BaseCommand {
               const releaseType = isRcBinary ? `canary` : `stable`;
               const candidate = data.latest[releaseType];
 
-              if (semver.gt(candidate, YarnVersion)) {
+              if (isVersionUpdate(candidate, YarnVersion)) {
                 newVersion = [releaseType, candidate];
               }
             }
