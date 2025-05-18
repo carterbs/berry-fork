@@ -47,6 +47,15 @@ export class NpmSemverResolver implements Resolver {
     if (range === null)
       throw new Error(`Expected a valid range, got ${descriptor.range.slice(PROTOCOL.length)}`);
 
+    const preferred = opts.project.catalogs.get(descriptor.identHash);
+    if (preferred) {
+      if (semver.satisfies(preferred, range.raw)) {
+        return [structUtils.makeLocator(descriptor, `${PROTOCOL}${preferred}`)];
+      } else {
+        opts.report.reportWarning(MessageName.UNNAMED, `${structUtils.prettyIdent(opts.project.configuration, descriptor)}@${preferred} listed in catalog does not satisfy ${descriptor.range}`);
+      }
+    }
+
     const registryData = await npmHttpUtils.getPackageMetadata(descriptor, {
       cache: opts.fetchOptions?.cache,
       project: opts.project,
