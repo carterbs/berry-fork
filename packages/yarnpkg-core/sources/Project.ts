@@ -261,6 +261,8 @@ export class Project {
   public optionalBuilds: Set<LocatorHash> = new Set();
   public skippedBuilds: Set<LocatorHash> = new Set();
 
+  public catalogs: Map<IdentHash, string> = new Map();
+
   /**
    * If true, the data contained within `originalPackages` are from a different
    * lockfile version and need to be refreshed.
@@ -317,6 +319,7 @@ export class Project {
 
     await project.setupResolutions();
     await project.setupWorkspaces();
+    await project.setupCatalogs();
 
     Configuration.telemetry?.reportWorkspaceCount(project.workspaces.length);
     Configuration.telemetry?.reportDependencyCount(project.workspaces.reduce((sum, workspace) => sum + workspace.manifest.dependencies.size + workspace.manifest.devDependencies.size, 0));
@@ -463,6 +466,10 @@ export class Project {
     };
 
     await loadWorkspaceReducer(Promise.resolve(), this.cwd);
+  }
+
+  private async setupCatalogs() {
+    this.catalogs = await this.configuration.getCatalogMap();
   }
 
   private addWorkspace(workspace: Workspace) {

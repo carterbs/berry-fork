@@ -585,6 +585,12 @@ export const coreDefinitions: {[coreSettingName: string]: SettingsDefinition} = 
     default: [`.env.yarn?`],
     isArray: true,
   },
+  catalogs: {
+    description: `List of catalog files or URLs providing dependency hints`,
+    type: SettingsType.STRING,
+    default: [],
+    isArray: true,
+  },
 
   // Package patching - to fix incorrect definitions
   packageExtensions: {
@@ -702,6 +708,7 @@ export interface ConfigurationValueMap {
 
   // Miscellaneous settings
   injectEnvironmentFiles: Array<PortablePath>;
+  catalogs: Array<string>;
 
   // Package patching - to fix incorrect definitions
   packageExtensions: Map<string, miscUtils.ToMapValue<{
@@ -1805,6 +1812,7 @@ export class Configuration {
   }
 
   private packageExtensions: PackageExtensions | null = null;
+  private catalogMap: Map<IdentHash, string> | null = null;
 
   /**
    * Computes and caches the package extensions.
@@ -1854,6 +1862,42 @@ export class Configuration {
       registerPackageExtension(structUtils.parseDescriptor(descriptorString, true), miscUtils.convertMapsToIndexableObjects(extensionData), {userProvided: true});
 
     return packageExtensions;
+  }
+
+  async getCatalogMap(): Promise<Map<IdentHash, string>> {
+    if (this.catalogMap !== null)
+      return this.catalogMap;
+
+    this.catalogMap = new Map();
+
+    for (const entry of this.get(`catalogs`)) {
+      let data: any;
+      try {
+        if (/^https?:/.test(entry)) {
+          const buffer = await httpUtils.get(entry, {configuration: this});
+          data = buffer.toString();
+        } else {
+          const path = ppath.resolve(this.projectCwd!, entry as PortablePath);
+          data = await xfs.readFilePromise(path, `utf8`);
+        }
+      } catch {
+        continue;
+      }
+
+      try {
+        const parsed = entry.endsWith(`.json`) ? JSON.parse(data) : parseSyml(data);
+        for (const [name, version] of Object.entries(parsed)) {
+          const ident = structUtils.parseIdent(name);
+          if (typeof version === `string`) {
+            this.catalogMap.set(ident.identHash, version);
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return this.catalogMap;
   }
 
   normalizeLocator(locator: Locator) {
