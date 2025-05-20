@@ -32,6 +32,9 @@ import * as semverUtils                                                         
 import * as structUtils                                                                                          from './structUtils';
 import {IdentHash, Package, Descriptor, PackageExtension, PackageExtensionType, PackageExtensionStatus, Locator} from './types';
 
+import {CatalogResolver}
+  from './CatalogResolver';
+
 const isPublicRepository = (function () {
   if (!GITHUB_ACTIONS || !process.env.GITHUB_EVENT_PATH)
     return false;
@@ -628,6 +631,20 @@ export const coreDefinitions: {[coreSettingName: string]: SettingsDefinition} = 
       },
     },
   },
+
+  dependencyCatalogs: {
+    description: `Map of dependency catalogs used by the \`catalog:\` protocol`,
+    type: SettingsType.MAP,
+    valueDefinition: {
+      description: `The catalog entries`,
+      type: SettingsType.MAP,
+      valueDefinition: {
+        description: `A semver range`,
+        type: SettingsType.STRING,
+      },
+    },
+    default: new Map(),
+  },
 };
 
 export interface ConfigurationValueMap {
@@ -709,6 +726,8 @@ export interface ConfigurationValueMap {
     peerDependencies?: Map<string, string>;
     peerDependenciesMeta?: Map<string, miscUtils.ToMapValue<{optional?: boolean}>>;
   }>>;
+
+  dependencyCatalogs: Map<string, Map<string, string>>;
 }
 
 export type PackageExtensionData = miscUtils.MapValueToObjectValue<miscUtils.MapValue<ConfigurationValueMap[`packageExtensions`]>>;
@@ -1748,6 +1767,7 @@ export class Configuration {
         new VirtualResolver(),
         new WorkspaceResolver(),
 
+        new CatalogResolver(),
         ...pluginResolvers,
       ])
     );

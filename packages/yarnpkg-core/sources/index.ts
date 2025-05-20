@@ -38,6 +38,8 @@ export {ThrowReport}                                                            
 export {VirtualFetcher}                                                                                             from './VirtualFetcher';
 export {WorkspaceFetcher}                                                                                           from './WorkspaceFetcher';
 export {WorkspaceResolver}                                                                                          from './WorkspaceResolver';
+export {CatalogResolver}
+  from './CatalogResolver';
 export {Workspace}                                                                                                  from './Workspace';
 export {YarnVersion}                                                                                                from './YarnVersion';
 export type {IdentHash, DescriptorHash, LocatorHash}                                                                from './types';

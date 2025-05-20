@@ -13,6 +13,7 @@ Features in `master` can be tried out by running `yarn set version from sources`
 - `node-modules` linker supports hoisting into inner workspaces that are parents of other workspaces
 - `node-modules` linker attemps to hoist tree more exhaustivel until nothing can be hoisted
 - `node-modules` linker uses aggregated count of peer and regular usages to decide hoisting priority, instead of preferring peer usages over regular as before, which should result in fewer duplicates
+- Added `dependencyCatalogs` configuration and the `catalog:` protocol for shared dependency versions.
 
 ## 4.1.0
 
