@@ -1,0 +1,30 @@
+---
+category: protocols
+slug: /protocol/catalog
+title: "Catalog Protocol"
+description: Resolve versions from dependency catalogs.
+---
+
+The `catalog:` protocol lets you replace hard coded ranges with values read from a shared catalog defined in your `.yarnrc.yml` file.
+
+```yaml
+dependencyCatalogs:
+  default:
+    react: "^18.2.0"
+    lodash: "^4.17.21"
+  legacy:
+    react: "^17.0.0"
+```
+
+Using the catalog is as simple as referencing it in your manifest:
+
+```json
+{
+  "dependencies": {
+    "react": "catalog:",
+    "lodash": "catalog:legacy"
+  }
+}
+```
+
+During resolution the ranges will be replaced by the values from the catalog.
